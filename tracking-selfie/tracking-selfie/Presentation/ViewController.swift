@@ -10,32 +10,60 @@ import AVFoundation
 import Photos
 
 class ViewController: UIViewController {
+    private let captureSession = AVCaptureSession()
+    private lazy var previewLayer = AVCaptureVideoPreviewLayer(session: self.captureSession)
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        self.addCameraInput()
         self.verifyAccessToCamera()
     }
     
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        self.previewLayer.frame = self.view.frame
+    }
+
     private func verifyAccessToCamera() {
         switch AVCaptureDevice.authorizationStatus(for: .video) {
         case .authorized:
-            // to do
-            return
+            self.showCameraFeed()
+            self.captureSession.startRunning()
         case .notDetermined:
             AVCaptureDevice.requestAccess(for: .video) { granted in
                 if granted {
-                    // to do
+                    self.showCameraFeed()
+                    self.captureSession.startRunning()
                 }
             }
         case .denied:
-            // to do
+            // UI update without permission
             return
         case .restricted:
-            // todo
+            // UI update without permission
             return
         @unknown default:
             assertionFailure("ERROR: something went wrong verifying access to camera")
         }
+    }
+    
+    private func showCameraFeed() {
+        self.previewLayer.videoGravity = .resizeAspectFill
+        self.view.layer.addSublayer(self.previewLayer)
+        self.previewLayer.frame = self.view.frame
+    }
+    
+    private func addCameraInput() {
+        guard let device = AVCaptureDevice.DiscoverySession(
+            deviceTypes: [.builtInWideAngleCamera,
+                          .builtInDualCamera,
+                          .builtInTrueDepthCamera],
+            mediaType: .video,
+            position: .front).devices.first else {
+               fatalError("No back camera device found, please make sure to run SimpleLaneDetection in an iOS device and not a simulator")
+        }
+        let cameraInput = try! AVCaptureDeviceInput(device: device)
+        self.captureSession.addInput(cameraInput)
     }
     
     private func verifyAccessToPhotoLibraryAddition() {
@@ -63,4 +91,3 @@ class ViewController: UIViewController {
     }
     
 }
-
