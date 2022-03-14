@@ -48,9 +48,12 @@ class ViewController: UIViewController {
     }
     
     private func showCameraFeed() {
-        self.previewLayer.videoGravity = .resizeAspectFill
-        self.view.layer.addSublayer(self.previewLayer)
-        self.previewLayer.frame = self.view.frame
+        DispatchQueue.main.sync {
+            self.previewLayer.videoGravity = .resizeAspectFill
+            self.view.layer.addSublayer(self.previewLayer)
+            self.previewLayer.frame = self.view.frame
+            self.view.setNeedsLayout()
+        }
     }
     
     private func addCameraInput() {
