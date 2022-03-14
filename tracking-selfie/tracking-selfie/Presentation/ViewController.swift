@@ -8,6 +8,7 @@
 import UIKit
 import AVFoundation
 import Photos
+import Vision
 
 class ViewController: UIViewController {
     private let captureSession = AVCaptureSession()
@@ -108,6 +109,20 @@ class ViewController: UIViewController {
         }
     }
     
+    private func detectFace(in image: CVPixelBuffer) {
+        let faceDetectionRequest = VNDetectFaceLandmarksRequest(completionHandler: { (request: VNRequest, error: Error?) in
+            DispatchQueue.main.async {
+                if let results = request.results as? [VNFaceObservation], results.count > 0 {
+                    print("did detect \(results.count) face(s)")
+                } else {
+                    print("did not detect any face")
+                }
+            }
+        })
+        let imageRequestHandler = VNImageRequestHandler(cvPixelBuffer: image, orientation: .leftMirrored, options: [:])
+        try? imageRequestHandler.perform([faceDetectionRequest])
+    }
+    
 }
 
 extension ViewController: AVCaptureVideoDataOutputSampleBufferDelegate {
@@ -116,6 +131,11 @@ extension ViewController: AVCaptureVideoDataOutputSampleBufferDelegate {
         didOutput sampleBuffer: CMSampleBuffer,
         from connection: AVCaptureConnection) {
         
-            print("did receive frame")
+            guard let frame = CMSampleBufferGetImageBuffer(sampleBuffer) else {
+                debugPrint("unable to get image from sample buffer")
+                return
+            }
+            
+            self.detectFace(in: frame)
     }
 }
