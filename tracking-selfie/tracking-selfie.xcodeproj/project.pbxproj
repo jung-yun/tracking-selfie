@@ -99,13 +99,11 @@
 		88D171FD27DF13E200954B8E /* tracking-selfie */ = {
 			isa = PBXGroup;
 			children = (
-				88D171FE27DF13E200954B8E /* AppDelegate.swift */,
-				88D1720027DF13E200954B8E /* SceneDelegate.swift */,
-				88D1720227DF13E200954B8E /* ViewController.swift */,
-				88D1720427DF13E200954B8E /* Main.storyboard */,
-				88D1720727DF13E500954B8E /* Assets.xcassets */,
-				88D1720927DF13E500954B8E /* LaunchScreen.storyboard */,
-				88D1720C27DF13E500954B8E /* Info.plist */,
+				88D1723027DF14E700954B8E /* Data */,
+				88D1723227DF14F700954B8E /* Presentation */,
+				88D1723127DF14EF00954B8E /* Domain */,
+				88D1722E27DF14C800954B8E /* Application */,
+				88D1722F27DF14D400954B8E /* Supporting */,
 			);
 			path = "tracking-selfie";
 			sourceTree = "<group>";
@@ -125,6 +123,48 @@
 				88D1722127DF13E500954B8E /* tracking_selfieUITestsLaunchTests.swift */,
 			);
 			path = "tracking-selfieUITests";
+			sourceTree = "<group>";
+		};
+		88D1722E27DF14C800954B8E /* Application */ = {
+			isa = PBXGroup;
+			children = (
+				88D171FE27DF13E200954B8E /* AppDelegate.swift */,
+				88D1720027DF13E200954B8E /* SceneDelegate.swift */,
+			);
+			path = Application;
+			sourceTree = "<group>";
+		};
+		88D1722F27DF14D400954B8E /* Supporting */ = {
+			isa = PBXGroup;
+			children = (
+				88D1720727DF13E500954B8E /* Assets.xcassets */,
+				88D1720927DF13E500954B8E /* LaunchScreen.storyboard */,
+				88D1720C27DF13E500954B8E /* Info.plist */,
+			);
+			path = Supporting;
+			sourceTree = "<group>";
+		};
+		88D1723027DF14E700954B8E /* Data */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Data;
+			sourceTree = "<group>";
+		};
+		88D1723127DF14EF00954B8E /* Domain */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Domain;
+			sourceTree = "<group>";
+		};
+		88D1723227DF14F700954B8E /* Presentation */ = {
+			isa = PBXGroup;
+			children = (
+				88D1720227DF13E200954B8E /* ViewController.swift */,
+				88D1720427DF13E200954B8E /* Main.storyboard */,
+			);
+			path = Presentation;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -441,7 +481,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 74X8W85PJ2;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = "tracking-selfie/Info.plist";
+				INFOPLIST_FILE = "tracking-selfie/Supporting/Info.plist";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
@@ -469,7 +509,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 74X8W85PJ2;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = "tracking-selfie/Info.plist";
+				INFOPLIST_FILE = "tracking-selfie/Supporting/Info.plist";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
