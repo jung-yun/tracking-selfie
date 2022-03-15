@@ -126,15 +126,27 @@ class ViewController: UIViewController {
     
     private func handleFaceDetectionResults(_ observedFaces: [VNFaceObservation]) {
         self.clearDrawings()
-        let facesBoundingBoxes: [CAShapeLayer] = observedFaces.map({ (observedFace: VNFaceObservation) -> CAShapeLayer in
+        
+        let facesBoundingBoxes: [CAShapeLayer] = observedFaces.flatMap({ (observedFace: VNFaceObservation) -> [CAShapeLayer] in
+            
             let faceBoundingBoxOnScreen = self.previewLayer.layerRectConverted(fromMetadataOutputRect: observedFace.boundingBox)
             let faceBoundingBoxPath = CGPath(rect: faceBoundingBoxOnScreen, transform: nil)
             let faceBoundingBoxShape = CAShapeLayer()
             faceBoundingBoxShape.path = faceBoundingBoxPath
             faceBoundingBoxShape.fillColor = UIColor.clear.cgColor
-            faceBoundingBoxShape.strokeColor = UIColor.green.cgColor
-            return faceBoundingBoxShape
+            faceBoundingBoxShape.strokeColor = UIColor.black.cgColor
+            
+            var newDrawings = [CAShapeLayer]()
+            newDrawings.append(faceBoundingBoxShape)
+            
+            //drawing facial features
+            if let landmarks = observedFace.landmarks {
+                newDrawings = newDrawings + self.drawFacicalFeatures(landmarks, screenBoundingBox: faceBoundingBoxOnScreen)
+            }
+            
+            return newDrawings
         })
+        
         facesBoundingBoxes.forEach({ faceBoundingBox in self.view.layer.addSublayer(faceBoundingBox) })
         self.drawings = facesBoundingBoxes
     }
@@ -142,21 +154,90 @@ class ViewController: UIViewController {
     private func clearDrawings() {
         self.drawings.forEach({ drawing in drawing.removeFromSuperlayer() })
     }
-
+    
+    private func drawFacicalFeatures(_ landmarks: VNFaceLandmarks2D, screenBoundingBox: CGRect) -> [CAShapeLayer] {
+        var faceFeaturesDrawings: [CAShapeLayer] = []
+        
+        if let leftEyebrow = landmarks.leftEyebrow {
+            let leftEyebrowDrawing = self.drawFacialFeature(leftEyebrow, screenBoundingBox: screenBoundingBox)
+            faceFeaturesDrawings.append(leftEyebrowDrawing)
+        }
+        
+        if let rightEyebrow = landmarks.rightEyebrow {
+            let rightEyebrowDrawing = self.drawFacialFeature(rightEyebrow, screenBoundingBox: screenBoundingBox)
+            faceFeaturesDrawings.append(rightEyebrowDrawing)
+        }
+        
+        if let leftEye = landmarks.leftEye {
+            let eyeDrawing = self.drawFacialFeature(leftEye, screenBoundingBox: screenBoundingBox)
+            faceFeaturesDrawings.append(eyeDrawing)
+        }
+        
+        if let rightEye = landmarks.rightEye {
+            let eyeDrawing = self.drawFacialFeature(rightEye, screenBoundingBox: screenBoundingBox)
+            faceFeaturesDrawings.append(eyeDrawing)
+        }
+        
+        if let nose = landmarks.noseCrest {
+            let noseDrawing = self.drawFacialFeature(nose, screenBoundingBox: screenBoundingBox)
+            faceFeaturesDrawings.append(noseDrawing)
+        }
+        
+        if let innerLips = landmarks.innerLips {
+            let innerLipsDrawing = self.drawFacialFeature(innerLips, screenBoundingBox: screenBoundingBox)
+            faceFeaturesDrawings.append(innerLipsDrawing)
+        }
+        
+        if let outerLips = landmarks.outerLips {
+            let outerLipsDrawing = self.drawFacialFeature(outerLips, screenBoundingBox: screenBoundingBox)
+            faceFeaturesDrawings.append(outerLipsDrawing)
+        }
+        
+        if let faceContour = landmarks.faceContour {
+            let faceContourDrawing = self.drawFacialFeature(faceContour, screenBoundingBox: screenBoundingBox)
+            faceFeaturesDrawings.append(faceContourDrawing)
+        }
+        
+        if let medianLine = landmarks.medianLine {
+            let medianLineDrawing = self.drawFacialFeature(medianLine, screenBoundingBox: screenBoundingBox)
+            faceFeaturesDrawings.append(medianLineDrawing)
+        }
+    
+        return faceFeaturesDrawings
+    }
+    
+    private func drawFacialFeature(_ feature: VNFaceLandmarkRegion2D, screenBoundingBox: CGRect) -> CAShapeLayer {
+        let featurePath = CGMutablePath()
+        let pathPoints = feature.normalizedPoints
+            .map({ point in
+                CGPoint(
+                    // point x, y를 바꿀 시 drawing이 -90도 회전
+                    x: point.y * screenBoundingBox.height + screenBoundingBox.origin.x,
+                    y: point.x * screenBoundingBox.width + screenBoundingBox.origin.y)
+             })
+        
+        featurePath.addLines(between: pathPoints)
+        featurePath.closeSubpath()
+        let featureDrawing = CAShapeLayer()
+        featureDrawing.path = featurePath
+        featureDrawing.fillColor = UIColor.clear.cgColor
+        featureDrawing.strokeColor = UIColor.systemRed.cgColor
+        
+        return featureDrawing
+    }
     
 }
 
 extension ViewController: AVCaptureVideoDataOutputSampleBufferDelegate {
-    func captureOutput(
-        _ output: AVCaptureOutput,
-        didOutput sampleBuffer: CMSampleBuffer,
-        from connection: AVCaptureConnection) {
-        
-            guard let frame = CMSampleBufferGetImageBuffer(sampleBuffer) else {
-                debugPrint("unable to get image from sample buffer")
-                return
-            }
+    func captureOutput(_ output: AVCaptureOutput,
+                       didOutput sampleBuffer: CMSampleBuffer,
+                       from connection: AVCaptureConnection) {
+        guard let frame = CMSampleBufferGetImageBuffer(sampleBuffer) else {
+            debugPrint("unable to get image from sample buffer")
+            return
+        }
             
-            self.detectFace(in: frame)
+        self.detectFace(in: frame)
     }
 }
+
