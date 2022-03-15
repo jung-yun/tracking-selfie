@@ -21,10 +21,21 @@ class ViewController: UIViewController {
     private let videoDataOutput = AVCaptureVideoDataOutput()
     private var drawings: [CAShapeLayer] = []
     
+    private let shootButton: UIButton = {
+        let button = UIButton()
+        button.layer.masksToBounds = true
+        button.layer.cornerRadius = 15
+        button.backgroundColor = .white
+        let image = UIImage(systemName: "camera", withConfiguration: UIImage.SymbolConfiguration(pointSize: 25, weight: .light))
+        button.setImage(image, for: .normal)
+        button.tintColor = .systemBlue
+        return button
+    }()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         self.addCameraInput()
-        
+        self.configureCameraShootButton()
         self.isAllowedAccessToCamera { result in
             switch result {
             case .success(_):
@@ -44,9 +55,23 @@ class ViewController: UIViewController {
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        self.previewLayer.frame = self.view.frame
+        self.previewLayer.frame = CGRect(x: self.view.frame.minX, y: self.view.frame.minY, width: self.view.frame.width, height: self.view.frame.height * 0.7)
     }
 
+    private func configureCameraShootButton() {
+        let buttonSize = CGFloat(44)
+        
+        self.shootButton.frame = CGRect(x: view.frame.size.width - buttonSize * 1.4, y: view.frame.height - buttonSize * 3.5, width: buttonSize, height: buttonSize)
+        
+        self.view.addSubview(self.shootButton)
+        self.shootButton.isHidden = true
+        self.shootButton.addTarget(self, action: #selector(shootCurrentFace), for: .touchUpInside)
+    }
+    
+    @objc private func shootCurrentFace() {
+        print("save face to library")
+    }
+    
     private func addCameraInput() {
         guard let device = AVCaptureDevice.DiscoverySession(
             deviceTypes: [.builtInWideAngleCamera,
@@ -91,7 +116,8 @@ class ViewController: UIViewController {
     private func showCameraFeed() {
         self.previewLayer.videoGravity = .resizeAspectFill
         self.view.layer.addSublayer(self.previewLayer)
-        self.previewLayer.frame = self.view.frame
+        self.previewLayer.frame = CGRect(x: self.view.frame.minX, y: self.view.frame.minY, width: self.view.frame.width, height: self.view.frame.height * 0.7)
+        
         self.view.setNeedsLayout()
     }
     
@@ -132,11 +158,14 @@ class ViewController: UIViewController {
     
     private func detectFace(in image: CVPixelBuffer) {
         let faceDetectionRequest = VNDetectFaceLandmarksRequest(completionHandler: { (request: VNRequest, error: Error?) in
+            
             DispatchQueue.main.async {
                 if let results = request.results as? [VNFaceObservation], results.count > 0 {
                     self.handleFaceDetectionResults(results)
+                    self.shootButton.isHidden = false
                 } else {
                     self.clearDrawings()
+                    self.shootButton.isHidden = true
                 }
             }
         })
