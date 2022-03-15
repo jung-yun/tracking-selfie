@@ -16,6 +16,7 @@
 		88D1721627DF13E500954B8E /* tracking_selfieTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88D1721527DF13E500954B8E /* tracking_selfieTests.swift */; };
 		88D1722027DF13E500954B8E /* tracking_selfieUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88D1721F27DF13E500954B8E /* tracking_selfieUITests.swift */; };
 		88D1722227DF13E500954B8E /* tracking_selfieUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88D1722127DF13E500954B8E /* tracking_selfieUITestsLaunchTests.swift */; };
+		88D1723427E0B87200954B8E /* UIViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88D1723327E0B87200954B8E /* UIViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -49,6 +50,7 @@
 		88D1721B27DF13E500954B8E /* tracking-selfieUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "tracking-selfieUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		88D1721F27DF13E500954B8E /* tracking_selfieUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = tracking_selfieUITests.swift; sourceTree = "<group>"; };
 		88D1722127DF13E500954B8E /* tracking_selfieUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = tracking_selfieUITestsLaunchTests.swift; sourceTree = "<group>"; };
+		88D1723327E0B87200954B8E /* UIViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -99,10 +101,10 @@
 		88D171FD27DF13E200954B8E /* tracking-selfie */ = {
 			isa = PBXGroup;
 			children = (
+				88D1722E27DF14C800954B8E /* Application */,
 				88D1723027DF14E700954B8E /* Data */,
 				88D1723227DF14F700954B8E /* Presentation */,
 				88D1723127DF14EF00954B8E /* Domain */,
-				88D1722E27DF14C800954B8E /* Application */,
 				88D1722F27DF14D400954B8E /* Supporting */,
 			);
 			path = "tracking-selfie";
@@ -130,6 +132,7 @@
 			children = (
 				88D171FE27DF13E200954B8E /* AppDelegate.swift */,
 				88D1720027DF13E200954B8E /* SceneDelegate.swift */,
+				88D1723527E0B87B00954B8E /* Extension */,
 			);
 			path = Application;
 			sourceTree = "<group>";
@@ -165,6 +168,14 @@
 				88D1720427DF13E200954B8E /* Main.storyboard */,
 			);
 			path = Presentation;
+			sourceTree = "<group>";
+		};
+		88D1723527E0B87B00954B8E /* Extension */ = {
+			isa = PBXGroup;
+			children = (
+				88D1723327E0B87200954B8E /* UIViewController.swift */,
+			);
+			path = Extension;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -300,6 +311,7 @@
 			files = (
 				88D1720327DF13E200954B8E /* ViewController.swift in Sources */,
 				88D171FF27DF13E200954B8E /* AppDelegate.swift in Sources */,
+				88D1723427E0B87200954B8E /* UIViewController.swift in Sources */,
 				88D1720127DF13E200954B8E /* SceneDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

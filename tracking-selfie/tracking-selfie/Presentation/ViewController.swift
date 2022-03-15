@@ -10,6 +10,11 @@ import AVFoundation
 import Photos
 import Vision
 
+enum CameraAccessError: String, Error {
+    case isDenied = "Access to camera is denied"
+    case isRestricted = "Access to camera is restricted"
+}
+
 class ViewController: UIViewController {
     private let captureSession = AVCaptureSession()
     private lazy var previewLayer = AVCaptureVideoPreviewLayer(session: self.captureSession)
@@ -19,7 +24,22 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         self.addCameraInput()
-        self.verifyAccessToCamera()
+        
+        self.isAllowedAccessToCamera { result in
+            switch result {
+            case .success(_):
+                self.showCameraFeed()
+                self.getCameraFrames()
+                self.captureSession.startRunning()
+            case .failure(let cameraAccessError):
+                self.presentAlert(title: "Camera Access Error",
+                                  message: cameraAccessError.rawValue,
+                                  confirmTitle: "OK", confirmHandler: nil,
+                                  cancelTitle: nil, cancelHandler: nil,
+                                  completion: nil, autodismiss: nil)
+            }
+        }
+        
     }
     
     override func viewDidLayoutSubviews() {
@@ -27,30 +47,44 @@ class ViewController: UIViewController {
         self.previewLayer.frame = self.view.frame
     }
 
-    private func verifyAccessToCamera() {
+    private func addCameraInput() {
+        guard let device = AVCaptureDevice.DiscoverySession(
+            deviceTypes: [.builtInWideAngleCamera,
+                          .builtInDualCamera,
+                          .builtInTrueDepthCamera],
+            mediaType: .video,
+            position: .front).devices.first else {
+                fatalError("No front camera device found, please make sure to run SimpleLaneDetection in an iOS device and not a simulator")
+        }
+        
+        do {
+            let cameraInput = try AVCaptureDeviceInput(device: device)
+            // adding input to the capture session
+            self.captureSession.addInput(cameraInput)
+        } catch {
+            fatalError(error.localizedDescription)
+        }
+        
+    }
+    
+    private func isAllowedAccessToCamera(handler: @escaping (Result<Void, CameraAccessError>) -> Void) {
         switch AVCaptureDevice.authorizationStatus(for: .video) {
         case .authorized:
-            self.showCameraFeed()
-            self.getCameraFrames()
-            self.captureSession.startRunning()
+            handler(.success(()))
         case .notDetermined:
             AVCaptureDevice.requestAccess(for: .video) { granted in
                 if granted {
-                    DispatchQueue.main.sync {
-                        self.showCameraFeed()
-                        self.getCameraFrames()
-                        self.captureSession.startRunning()
-                    }
+                    handler(.success(()))
+                } else {
+                    handler(.failure(.isDenied))
                 }
             }
         case .denied:
-            // UI update without permission
-            return
+            handler(.failure(.isDenied))
         case .restricted:
-            // UI update without permission
-            return
+            handler(.failure(.isRestricted))
         @unknown default:
-            assertionFailure("ERROR: something went wrong verifying access to camera")
+            fatalError("ERROR: something went wrong verifying access to camera")
         }
     }
     
@@ -59,20 +93,6 @@ class ViewController: UIViewController {
         self.view.layer.addSublayer(self.previewLayer)
         self.previewLayer.frame = self.view.frame
         self.view.setNeedsLayout()
-    }
-    
-    private func addCameraInput() {
-        guard let device = AVCaptureDevice.DiscoverySession(
-            deviceTypes: [.builtInWideAngleCamera,
-                          .builtInDualCamera,
-                          .builtInTrueDepthCamera],
-            mediaType: .video,
-            position: .front).devices.first else {
-               fatalError("No back camera device found, please make sure to run SimpleLaneDetection in an iOS device and not a simulator")
-        }
-        let cameraInput = try! AVCaptureDeviceInput(device: device)
-        // adding input to the capture session
-        self.captureSession.addInput(cameraInput)
     }
     
     private func getCameraFrames() {
@@ -120,6 +140,7 @@ class ViewController: UIViewController {
                 }
             }
         })
+        
         let imageRequestHandler = VNImageRequestHandler(cvPixelBuffer: image, orientation: .leftMirrored, options: [:])
         try? imageRequestHandler.perform([faceDetectionRequest])
     }
