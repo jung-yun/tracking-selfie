@@ -9,6 +9,7 @@ import UIKit
 import AVFoundation
 import Photos
 import Vision
+import CoreML
 
 enum CameraAccessError: String, Error {
     case isDenied = "Access to camera is denied"
@@ -187,6 +188,8 @@ class MainViewController: UIViewController {
             if let landmarks = observedFace.landmarks {
                 newDrawings = newDrawings + self.drawFacicalFeatures(landmarks, screenBoundingBox: faceBoundingBoxOnScreen)
             }
+            
+            
             
             return newDrawings
         })

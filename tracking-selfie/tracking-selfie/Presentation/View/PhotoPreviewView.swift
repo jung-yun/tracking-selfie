@@ -7,7 +7,6 @@
 
 import UIKit
 import Vision
-import Photos
 
 class PhotoPreviewViewController: UIViewController {
     private var vm: LocalPhotoLibraryUsable! = nil
@@ -116,7 +115,7 @@ class PhotoPreviewViewController: UIViewController {
     }
     
     @objc private func saveCroppedFaces() {
-        // viewModel.savePhotos
+        
         self.vm.save(photos: self.croppedImages) { result in
             switch result {
             case .success(_):
