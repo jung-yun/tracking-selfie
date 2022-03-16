@@ -292,7 +292,7 @@ extension ViewController: AVCapturePhotoCaptureDelegate {
         guard let previewImage = UIImage(data: imageData) else { return }
         
         let photoPreviewContainer = PhotoPreviewViewController()
-        photoPreviewContainer.setImage(previewImage)
+        photoPreviewContainer.injectImage(previewImage)
         self.navigationController?.pushViewController(photoPreviewContainer, animated: true)
     }
     

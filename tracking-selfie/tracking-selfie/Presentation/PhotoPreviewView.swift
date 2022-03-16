@@ -10,18 +10,22 @@ import Vision
 import Photos
 
 class PhotoPreviewViewController: UIViewController {
-    private var previewImage: UIImage? = nil
-    private var croppedImages: [UIImage] = []
-    private var redViews: [UIView] = []
     private var photoImageView: UIImageView! = nil
+    private var croppedImages: [UIImage] = []
     
     override func viewDidLoad() {
         self.setRightBarButtonItem()
         
-        guard let image = previewImage else {
-            return
-        }
-
+        guard let image = photoImageView.image else { return }
+        self.configurePhotoImageView(with: image)
+        self.detectFace(on: image)
+    }
+    
+    public func injectImage(_ image: UIImage) {
+        self.photoImageView.image = image
+    }
+    
+    private func configurePhotoImageView(with image: UIImage) {
         photoImageView = UIImageView(image: image)
         photoImageView.contentMode = .scaleAspectFill
         let scaledHeight = view.frame.width / image.size.width * image.size.height
@@ -30,92 +34,73 @@ class PhotoPreviewViewController: UIViewController {
                                       y: 0,
                                       width: self.view.frame.width,
                                       height: scaledHeight)
-        
         self.view.addSubview(photoImageView)
-        
+    }
+    
+    private func detectFace(on image: UIImage) {
         let request = VNDetectFaceRectanglesRequest { req, err in
-            
             if let err = err {
                 print(err.localizedDescription)
                 return
             }
             
-            req.results?.forEach({ res in
+            req.results?.forEach({ [weak self] res in
                 guard let faceObservation = res as? VNFaceObservation else { return }
-                print(faceObservation.boundingBox)
-                
-                let height = scaledHeight * faceObservation.boundingBox.height
-                let width = self.view.frame.width * faceObservation.boundingBox.width
-                let y = scaledHeight * (1 - faceObservation.boundingBox.origin.y) - height
-                let x = self.view.frame.width * (1 - faceObservation.boundingBox.origin.x) - width
-                
-                let redView = UIView()
-                redView.backgroundColor = .red
-                redView.alpha = 0.3
-                redView.frame = CGRect(x: x, y: y, width: width, height: height)
-                self.view.addSubview(redView)
-                self.redViews.append(redView)
-                
-                // make cropped Images
-                
-//                let newHeight = image.size.height * faceObservation.boundingBox.height
-//                let newWidth = image.size.width * faceObservation.boundingBox.width
-//                let newY = image.size.height * (1 - faceObservation.boundingBox.origin.y) - newHeight
-//                let newX = image.size.width * (1 - faceObservation.boundingBox.origin.x) - newWidth
-                
-//                let cropRect = CGRect(x: newX, y: newY, width: newWidth, height: newHeight)
-//                guard let cgImage = self.previewImage?.cgImage else { return }
-//                let cropped = cgImage.cropping(to: cropRect)!
-                self.croppedImages.append(self.getCroppedImage(redView: redView))
-                
+                self?.handleDetectedFace(with: faceObservation)
             })
         }
         
         guard let cgImage = image.cgImage else { return }
-        
         let handler = VNImageRequestHandler(cgImage: cgImage, orientation: .leftMirrored, options: [:])
-        
         do {
             try handler.perform([request])
         } catch let reqErr {
             print("Failed to perform reqeust", reqErr)
         }
-        
     }
     
-    private func getCroppedImage(redView: UIView) -> UIImage {
-        let imsize = photoImageView.image!.size
-        let ivsize = photoImageView.bounds.size
+    private func handleDetectedFace(with faceObservation: VNFaceObservation) {
+        let scaledHeight = self.photoImageView.frame.height
+        let height = scaledHeight * faceObservation.boundingBox.height
+        let width = self.view.frame.width * faceObservation.boundingBox.width
+        let y = scaledHeight * (1 - faceObservation.boundingBox.origin.y) - height
+        let x = self.view.frame.width * (1 - faceObservation.boundingBox.origin.x) - width
+        
+        let redView = UIView()
+        redView.backgroundColor = .red
+        redView.alpha = 0.3
+        redView.frame = CGRect(x: x, y: y, width: width, height: height)
+        self.view.addSubview(redView)
 
-        var scale : CGFloat = ivsize.width / imsize.width
-        if imsize.height * scale < ivsize.height {
-            scale = ivsize.height / imsize.height
+        self.croppedImages.append(self.getCroppedImageAt(redView: redView))
+    }
+    
+    private func getCroppedImageAt(redView: UIView) -> UIImage {
+        let imageSize = photoImageView.image!.size
+        let imageViewSize = photoImageView.bounds.size
+
+        var scale : CGFloat = imageViewSize.width / imageSize.width
+        if imageSize.height * scale < imageViewSize.height {
+            scale = imageViewSize.height / imageSize.height
         }
 
-        let dispSize = CGSize(width:ivsize.width/scale, height:ivsize.height/scale)
-        let dispOrigin = CGPoint(x: (imsize.width-dispSize.width)/2.0,
-                                 y: (imsize.height-dispSize.height)/2.0)
+        let dispSize = CGSize(width: imageViewSize.width/scale, height: imageViewSize.height/scale)
+        let dispOrigin = CGPoint(x: (imageSize.width-dispSize.width)/2.0,
+                                 y: (imageSize.height-dispSize.height)/2.0)
         
-
-        let r = self.redViews[0].convert(self.redViews[0].bounds, to: self.photoImageView)
-        let cropRect =
-        CGRect(x:r.origin.x/scale+dispOrigin.x,
-               y:r.origin.y/scale+dispOrigin.y,
-               width:r.width/scale,
-               height:r.height/scale)
+        let r = redView.convert(redView.bounds, to: self.photoImageView)
+        let cropRect = CGRect(x: r.origin.x/scale+dispOrigin.x,
+                              y: r.origin.y/scale+dispOrigin.y,
+                              width: r.width/scale,
+                              height: r.height/scale)
         
         let rend = UIGraphicsImageRenderer(size:cropRect.size)
-        let croppedIm = rend.image { _ in
+        let croppedImage = rend.image { _ in
             self.photoImageView.image!.draw(at: CGPoint(x:-cropRect.origin.x,
-                                            y:-cropRect.origin.y))
+                                                        y:-cropRect.origin.y))
         }
          
-        return croppedIm
-    }
-    
-    
-    public func setImage(_ image: UIImage) {
-        self.previewImage = image
+        return croppedImage
     }
     
     private func setRightBarButtonItem() {
@@ -127,15 +112,12 @@ class PhotoPreviewViewController: UIViewController {
     }
     
     @objc private func savePhoto() {
-        
         PHPhotoLibrary.requestAuthorization { (status) in
             if status == .authorized {
-
                 do {
                     for croppedImage in self.croppedImages {
                         try PHPhotoLibrary.shared().performChangesAndWait {
                             PHAssetChangeRequest.creationRequestForAsset(from: croppedImage)
-                            print("photo has saved in library...")
                         }
                     }
                     
@@ -143,11 +125,14 @@ class PhotoPreviewViewController: UIViewController {
                         self.navigationController?.popViewController(animated: true)
                     }
 
-                } catch let error {
-                    print("failed to save photo in library: ", error)
+                } catch {
+                    assertionFailure(error.localizedDescription)
                 }
             } else {
-                print("Something went wrong with permission...")
+                self.presentAlert(title: "ERROR", message: "Cannot Access To Photo Library",
+                                  confirmTitle: "OK", confirmHandler: nil,
+                                  cancelTitle: nil, cancelHandler: nil,
+                                  completion: nil, autodismiss: nil)
             }
         }
     }
