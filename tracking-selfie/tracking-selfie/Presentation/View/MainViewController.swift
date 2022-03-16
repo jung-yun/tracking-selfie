@@ -17,13 +17,14 @@ enum CameraAccessError: String, Error {
 }
 
 class MainViewController: UIViewController {
+    //MARK: - Properties
     private var vm: (LocalPhotoLibraryUsable & DogPicDownloadable)!
     
     private let captureSession = AVCaptureSession()
     private lazy var previewLayer = AVCaptureVideoPreviewLayer(session: self.captureSession)
     private let videoDataOutput = AVCaptureVideoDataOutput()
     private var drawings: [CAShapeLayer] = []
-    private let photoOutput = AVCapturePhotoOutput()
+    private let photoDataOutput = AVCapturePhotoOutput()
     
     private let shootButton: UIButton = {
         let button = UIButton()
@@ -56,7 +57,7 @@ class MainViewController: UIViewController {
         imageView.backgroundColor = .white.withAlphaComponent(0.5)
         return imageView
     }()
-    
+    //MARK: - Callbacks
     override func viewDidLoad() {
         super.viewDidLoad()
         self.addCameraInput()
@@ -92,6 +93,7 @@ class MainViewController: UIViewController {
         self.view.bringSubviewToFront(dogPicImageView)
     }
 
+    //MARK: - Methods
     public func inject(vm: LocalPhotoLibraryUsable & DogPicDownloadable) {
         self.vm = vm
     }
@@ -136,7 +138,7 @@ class MainViewController: UIViewController {
         
         if let photoPreviewType = photoSettings.availablePreviewPhotoPixelFormatTypes.first {
             photoSettings.previewPhotoFormat = [kCVPixelBufferPixelFormatTypeKey as String: photoPreviewType]
-            self.photoOutput.capturePhoto(with: photoSettings, delegate: self)
+            self.photoDataOutput.capturePhoto(with: photoSettings, delegate: self)
         }
     }
     
@@ -194,13 +196,14 @@ class MainViewController: UIViewController {
     }
     
     private func getCameraFrames() {
+        //The only key currently supported is the kCVPixelBufferPixelFormatTypeKey key.
         self.videoDataOutput.videoSettings = [(kCVPixelBufferPixelFormatTypeKey as NSString) : NSNumber(value: kCVPixelFormatType_32BGRA)] as [String : Any]
         self.videoDataOutput.alwaysDiscardsLateVideoFrames = true
         self.videoDataOutput.setSampleBufferDelegate(self, queue: DispatchQueue(label: "camera_frame_processing_queue"))
         
         // adding outputs to the capture session
         self.captureSession.addOutput(self.videoDataOutput)
-        self.captureSession.addOutput(self.photoOutput)
+        self.captureSession.addOutput(self.photoDataOutput)
         
         guard let connection = self.videoDataOutput.connection(with: AVMediaType.video),
             connection.isVideoOrientationSupported else { return }
@@ -313,7 +316,6 @@ class MainViewController: UIViewController {
         let pathPoints = feature.normalizedPoints
             .map({ point in
                 CGPoint(
-                    // point x, y를 바꿀 시 drawing이 -90도 회전
                     x: point.y * screenBoundingBox.height + screenBoundingBox.origin.x,
                     y: point.x * screenBoundingBox.width + screenBoundingBox.origin.y)
              })
