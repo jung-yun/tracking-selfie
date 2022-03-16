@@ -20,6 +20,7 @@ class ViewController: UIViewController {
     private lazy var previewLayer = AVCaptureVideoPreviewLayer(session: self.captureSession)
     private let videoDataOutput = AVCaptureVideoDataOutput()
     private var drawings: [CAShapeLayer] = []
+    private let photoOutput = AVCapturePhotoOutput()
     
     private let shootButton: UIButton = {
         let button = UIButton()
@@ -36,6 +37,7 @@ class ViewController: UIViewController {
         super.viewDidLoad()
         self.addCameraInput()
         self.configureCameraShootButton()
+        
         self.isAllowedAccessToCamera { result in
             switch result {
             case .success(_):
@@ -55,7 +57,8 @@ class ViewController: UIViewController {
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        self.previewLayer.frame = CGRect(x: self.view.frame.minX, y: self.view.frame.minY, width: self.view.frame.width, height: self.view.frame.height * 0.7)
+        self.previewLayer.frame = CGRect(x: self.view.frame.minX, y: self.view.frame.minY, width: self.view.frame.width, height: self.view.frame.height)
+        self.view.bringSubviewToFront(shootButton)
     }
 
     private func configureCameraShootButton() {
@@ -69,7 +72,12 @@ class ViewController: UIViewController {
     }
     
     @objc private func shootCurrentFace() {
-        print("save face to library")
+        let photoSettings = AVCapturePhotoSettings()
+        
+        if let photoPreviewType = photoSettings.availablePreviewPhotoPixelFormatTypes.first {
+            photoSettings.previewPhotoFormat = [kCVPixelBufferPixelFormatTypeKey as String: photoPreviewType]
+            self.photoOutput.capturePhoto(with: photoSettings, delegate: self)
+        }
     }
     
     private func addCameraInput() {
@@ -116,44 +124,23 @@ class ViewController: UIViewController {
     private func showCameraFeed() {
         self.previewLayer.videoGravity = .resizeAspectFill
         self.view.layer.addSublayer(self.previewLayer)
-        self.previewLayer.frame = CGRect(x: self.view.frame.minX, y: self.view.frame.minY, width: self.view.frame.width, height: self.view.frame.height * 0.7)
-        
-        self.view.setNeedsLayout()
+        self.previewLayer.frame = CGRect(x: self.view.frame.minX, y: self.view.frame.minY, width: self.view.frame.width, height: self.view.frame.height)
+        self.view.bringSubviewToFront(shootButton)
+//        self.view.setNeedsLayout()
     }
     
     private func getCameraFrames() {
         self.videoDataOutput.videoSettings = [(kCVPixelBufferPixelFormatTypeKey as NSString) : NSNumber(value: kCVPixelFormatType_32BGRA)] as [String : Any]
         self.videoDataOutput.alwaysDiscardsLateVideoFrames = true
         self.videoDataOutput.setSampleBufferDelegate(self, queue: DispatchQueue(label: "camera_frame_processing_queue"))
-        // adding output to the capture session
+        
+        // adding outputs to the capture session
         self.captureSession.addOutput(self.videoDataOutput)
+        self.captureSession.addOutput(self.photoOutput)
+        
         guard let connection = self.videoDataOutput.connection(with: AVMediaType.video),
             connection.isVideoOrientationSupported else { return }
         connection.videoOrientation = .portrait
-    }
-    
-    private func verifyAccessToPhotoLibraryAddition() {
-        PHPhotoLibrary.requestAuthorization(for: .readWrite) { status in
-            switch status {
-            case .notDetermined:
-                // The user hasn't determined this app's access.
-                return
-            case .restricted:
-                // The system restricted this app's access.
-                return
-            case .denied:
-                // The user explicitly denied this app's access.
-                return
-            case .authorized:
-                // The user authorized this app to access Photos data.
-                return
-            case .limited:
-                // The user authorized this app for limited Photos access.
-                return
-            @unknown default:
-                assertionFailure("ERROR: something went wrong verifying access to photo library addition")
-            }
-        }
     }
     
     private func detectFace(in image: CVPixelBuffer) {
@@ -172,6 +159,7 @@ class ViewController: UIViewController {
         
         let imageRequestHandler = VNImageRequestHandler(cvPixelBuffer: image, orientation: .leftMirrored, options: [:])
         try? imageRequestHandler.perform([faceDetectionRequest])
+    
     }
     
     private func handleFaceDetectionResults(_ observedFaces: [VNFaceObservation]) {
@@ -289,5 +277,23 @@ extension ViewController: AVCaptureVideoDataOutputSampleBufferDelegate {
             
         self.detectFace(in: frame)
     }
+
 }
 
+extension ViewController: AVCapturePhotoCaptureDelegate {
+    func photoOutput(_ output: AVCapturePhotoOutput,
+                     didFinishProcessingPhoto photo: AVCapturePhoto,
+                     error: Error?) {
+        if let error = error {
+                print("error occure : \(error.localizedDescription)")
+            }
+        
+        guard let imageData = photo.fileDataRepresentation() else { return }
+        guard let previewImage = UIImage(data: imageData) else { return }
+        
+        let photoPreviewContainer = PhotoPreviewViewController()
+        photoPreviewContainer.setImage(previewImage)
+        self.navigationController?.pushViewController(photoPreviewContainer, animated: true)
+    }
+    
+}

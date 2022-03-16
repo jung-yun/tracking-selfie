@@ -17,6 +17,7 @@
 		88D1722027DF13E500954B8E /* tracking_selfieUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88D1721F27DF13E500954B8E /* tracking_selfieUITests.swift */; };
 		88D1722227DF13E500954B8E /* tracking_selfieUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88D1722127DF13E500954B8E /* tracking_selfieUITestsLaunchTests.swift */; };
 		88D1723427E0B87200954B8E /* UIViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88D1723327E0B87200954B8E /* UIViewController.swift */; };
+		88D1723727E0C84700954B8E /* PhotoPreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88D1723627E0C84700954B8E /* PhotoPreviewView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -51,6 +52,7 @@
 		88D1721F27DF13E500954B8E /* tracking_selfieUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = tracking_selfieUITests.swift; sourceTree = "<group>"; };
 		88D1722127DF13E500954B8E /* tracking_selfieUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = tracking_selfieUITestsLaunchTests.swift; sourceTree = "<group>"; };
 		88D1723327E0B87200954B8E /* UIViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIViewController.swift; sourceTree = "<group>"; };
+		88D1723627E0C84700954B8E /* PhotoPreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoPreviewView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -164,8 +166,9 @@
 		88D1723227DF14F700954B8E /* Presentation */ = {
 			isa = PBXGroup;
 			children = (
-				88D1720227DF13E200954B8E /* ViewController.swift */,
 				88D1720427DF13E200954B8E /* Main.storyboard */,
+				88D1720227DF13E200954B8E /* ViewController.swift */,
+				88D1723627E0C84700954B8E /* PhotoPreviewView.swift */,
 			);
 			path = Presentation;
 			sourceTree = "<group>";
@@ -312,6 +315,7 @@
 				88D1720327DF13E200954B8E /* ViewController.swift in Sources */,
 				88D171FF27DF13E200954B8E /* AppDelegate.swift in Sources */,
 				88D1723427E0B87200954B8E /* UIViewController.swift in Sources */,
+				88D1723727E0C84700954B8E /* PhotoPreviewView.swift in Sources */,
 				88D1720127DF13E200954B8E /* SceneDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
