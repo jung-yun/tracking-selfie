@@ -38,6 +38,33 @@ extension UIViewController {
         }
     }
     
+    //MARK: - Toast Message Method
+    func presentToastMessage(with text: String) {
+        let label = ToastMessageLabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        let labelHeight = self.view.frame.height / 35
+        label.font = UIFont.systemFont(ofSize: labelHeight * 0.6)
+        label.backgroundColor = UIColor.black.withAlphaComponent(0.6)
+        label.textColor = UIColor.white
+        label.text = text
+        label.layer.cornerRadius = labelHeight / 3
+        label.layer.masksToBounds = true
+        self.view.addSubview(label)
+        
+        NSLayoutConstraint.activate(
+            [
+            label.centerXAnchor.constraint(equalTo: self.view.centerXAnchor),
+            label.centerYAnchor.constraint(equalTo: self.view.centerYAnchor, constant: -self.view.frame.height / 3)
+            ]
+        )
+        
+        UIView.animate(withDuration: 3.0, delay: 0.5, options: .curveEaseOut) {
+            label.alpha = 0.0
+        } completion: { (completion) in
+            label.removeFromSuperview()
+        }
+    }
+    
 }
 
     

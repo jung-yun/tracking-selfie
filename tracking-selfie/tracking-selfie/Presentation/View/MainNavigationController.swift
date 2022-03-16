@@ -11,8 +11,9 @@ class MainNavigationController: UINavigationController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        let vm = ViewModel()
+        let networkController = NetworkController(sessionManager: SessionManager())
+        let dogPicService = DogPicService(networkController: networkController)
+        let vm = ViewModel(dogPicService: dogPicService)
         
         if let rootViewController = self.viewControllers[0] as? MainViewController {
             rootViewController.inject(vm: vm)

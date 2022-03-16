@@ -17,7 +17,7 @@ enum CameraAccessError: String, Error {
 }
 
 class MainViewController: UIViewController {
-    private var vm: LocalPhotoLibraryUsable! = nil
+    private var vm: (LocalPhotoLibraryUsable & DogPicDownloadable)! = nil
     
     private let captureSession = AVCaptureSession()
     private lazy var previewLayer = AVCaptureVideoPreviewLayer(session: self.captureSession)
@@ -36,10 +36,32 @@ class MainViewController: UIViewController {
         return button
     }()
     
+    private let dogPicButton: UIButton = {
+        let button = UIButton()
+        button.layer.masksToBounds = true
+        button.layer.cornerRadius = 15
+        button.backgroundColor = .white
+        let image = UIImage(systemName: "photo.artframe", withConfiguration: UIImage.SymbolConfiguration(pointSize: 25, weight: .light))
+        button.setImage(image, for: .normal)
+        button.tintColor = .systemBlue
+        return button
+    }()
+    
+    private let dogPicImageView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.contentMode = .scaleAspectFit
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        imageView.layer.cornerRadius = 20
+        imageView.layer.masksToBounds = true
+        imageView.backgroundColor = .white.withAlphaComponent(0.5)
+        return imageView
+    }()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         self.addCameraInput()
-        self.configureCameraShootButton()
+        self.configureButtons()
+        self.configureDogImageView()
         
         self.isAllowedAccessToCamera { result in
             switch result {
@@ -62,20 +84,47 @@ class MainViewController: UIViewController {
         super.viewDidLayoutSubviews()
         self.previewLayer.frame = CGRect(x: self.view.frame.minX, y: self.view.frame.minY, width: self.view.frame.width, height: self.view.frame.height)
         self.view.bringSubviewToFront(shootButton)
+        self.view.bringSubviewToFront(dogPicButton)
+        self.view.bringSubviewToFront(dogPicImageView)
     }
 
-    public func inject(vm: LocalPhotoLibraryUsable) {
+    public func inject(vm: LocalPhotoLibraryUsable & DogPicDownloadable) {
         self.vm = vm
     }
     
-    private func configureCameraShootButton() {
+    private func configureDogImageView() {
+        self.view.addSubview(self.dogPicImageView)
+        
+        NSLayoutConstraint.activate([
+            self.dogPicImageView.leadingAnchor.constraint(equalTo: self.view.leadingAnchor, constant: 20),
+            self.dogPicImageView.bottomAnchor.constraint(equalTo: self.view.bottomAnchor, constant: -20),
+            self.dogPicImageView.widthAnchor.constraint(equalTo: self.view.widthAnchor, multiplier: 0.5),
+            self.dogPicImageView.heightAnchor.constraint(equalTo: self.view.widthAnchor, multiplier: 0.5)
+        ])
+    }
+    
+    private func configureButtons() {
         let buttonSize = CGFloat(44)
         
-        self.shootButton.frame = CGRect(x: view.frame.size.width - buttonSize * 1.4, y: view.frame.height - buttonSize * 3.5, width: buttonSize, height: buttonSize)
+        self.shootButton.frame = CGRect(x: view.frame.size.width - buttonSize * 1.4, y: view.frame.height - buttonSize * 3, width: buttonSize, height: buttonSize)
+        self.dogPicButton.frame = CGRect(x: view.frame.size.width - buttonSize * 1.4, y: view.frame.height - buttonSize * 4.5, width: buttonSize, height: buttonSize)
         
         self.view.addSubview(self.shootButton)
+        self.view.addSubview(self.dogPicButton)
+        
         self.shootButton.isHidden = true
+        
         self.shootButton.addTarget(self, action: #selector(shootCurrentFace), for: .touchUpInside)
+        self.dogPicButton.addTarget(self, action: #selector(showDogPic), for: .touchUpInside)
+    }
+    
+    @objc private func showDogPic() {
+        self.vm.getRandomDogPic { image in
+            DispatchQueue.main.async {
+                self.dogPicImageView.image = image
+                self.presentToastMessage(with: "You're not smiling, Here is a dog picture for you :)")
+            }
+        }
     }
     
     @objc private func shootCurrentFace() {
@@ -133,6 +182,8 @@ class MainViewController: UIViewController {
         self.view.layer.addSublayer(self.previewLayer)
         self.previewLayer.frame = CGRect(x: self.view.frame.minX, y: self.view.frame.minY, width: self.view.frame.width, height: self.view.frame.height)
         self.view.bringSubviewToFront(shootButton)
+        self.view.bringSubviewToFront(dogPicButton)
+        self.view.bringSubviewToFront(dogPicImageView)
 //        self.view.setNeedsLayout()
     }
     
