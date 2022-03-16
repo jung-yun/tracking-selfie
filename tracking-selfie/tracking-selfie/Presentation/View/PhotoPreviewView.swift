@@ -10,6 +10,7 @@ import Vision
 import Photos
 
 class PhotoPreviewViewController: UIViewController {
+    private var vm: LocalPhotoLibraryUsable! = nil
     private var photoImageView: UIImageView! = nil
     private var croppedImages: [UIImage] = []
     
@@ -21,15 +22,14 @@ class PhotoPreviewViewController: UIViewController {
         self.detectFace(on: image)
     }
     
-    public func injectImage(_ image: UIImage) {
-        self.photoImageView.image = image
+    public func inject(_ image: UIImage, vm: LocalPhotoLibraryUsable) {
+        self.photoImageView = UIImageView(image: image)
+        self.vm = vm
     }
     
     private func configurePhotoImageView(with image: UIImage) {
-        photoImageView = UIImageView(image: image)
         photoImageView.contentMode = .scaleAspectFill
         let scaledHeight = view.frame.width / image.size.width * image.size.height
-        
         photoImageView.frame = CGRect(x: 0,
                                       y: 0,
                                       width: self.view.frame.width,
@@ -40,7 +40,11 @@ class PhotoPreviewViewController: UIViewController {
     private func detectFace(on image: UIImage) {
         let request = VNDetectFaceRectanglesRequest { req, err in
             if let err = err {
-                print(err.localizedDescription)
+                self.presentAlert(title: "ERROR",
+                                  message: "Something went wrong detecting face: \(err.localizedDescription)",
+                                  confirmTitle: "OK", confirmHandler: nil,
+                                  cancelTitle: nil, cancelHandler: nil,
+                                  completion: nil, autodismiss: nil)
                 return
             }
             
@@ -106,30 +110,22 @@ class PhotoPreviewViewController: UIViewController {
     private func setRightBarButtonItem() {
         let backToMainButton = UIBarButtonItem(barButtonSystemItem: .save,
                                                target: self,
-                                               action: #selector(savePhoto))
+                                               action: #selector(saveCroppedFaces))
 
         navigationItem.rightBarButtonItems = [backToMainButton]
     }
     
-    @objc private func savePhoto() {
-        PHPhotoLibrary.requestAuthorization { (status) in
-            if status == .authorized {
-                do {
-                    for croppedImage in self.croppedImages {
-                        try PHPhotoLibrary.shared().performChangesAndWait {
-                            PHAssetChangeRequest.creationRequestForAsset(from: croppedImage)
-                        }
-                    }
-                    
-                    DispatchQueue.main.async {
-                        self.navigationController?.popViewController(animated: true)
-                    }
-
-                } catch {
-                    assertionFailure(error.localizedDescription)
+    @objc private func saveCroppedFaces() {
+        // viewModel.savePhotos
+        self.vm.save(photos: self.croppedImages) { result in
+            switch result {
+            case .success(_):
+                DispatchQueue.main.async {
+                    self.navigationController?.popViewController(animated: true)
                 }
-            } else {
-                self.presentAlert(title: "ERROR", message: "Cannot Access To Photo Library",
+            case .failure(let error):
+                self.presentAlert(title: "ERROR",
+                                  message: error.rawValue,
                                   confirmTitle: "OK", confirmHandler: nil,
                                   cancelTitle: nil, cancelHandler: nil,
                                   completion: nil, autodismiss: nil)

@@ -1,5 +1,5 @@
 //
-//  ViewController.swift
+//  MainViewController.swift
 //  tracking-selfie
 //
 //  Created by 조중윤 on 2022/03/14.
@@ -15,7 +15,9 @@ enum CameraAccessError: String, Error {
     case isRestricted = "Access to camera is restricted"
 }
 
-class ViewController: UIViewController {
+class MainViewController: UIViewController {
+    private var vm: LocalPhotoLibraryUsable! = nil
+    
     private let captureSession = AVCaptureSession()
     private lazy var previewLayer = AVCaptureVideoPreviewLayer(session: self.captureSession)
     private let videoDataOutput = AVCaptureVideoDataOutput()
@@ -61,6 +63,10 @@ class ViewController: UIViewController {
         self.view.bringSubviewToFront(shootButton)
     }
 
+    public func inject(vm: LocalPhotoLibraryUsable) {
+        self.vm = vm
+    }
+    
     private func configureCameraShootButton() {
         let buttonSize = CGFloat(44)
         
@@ -266,7 +272,7 @@ class ViewController: UIViewController {
     
 }
 
-extension ViewController: AVCaptureVideoDataOutputSampleBufferDelegate {
+extension MainViewController: AVCaptureVideoDataOutputSampleBufferDelegate {
     func captureOutput(_ output: AVCaptureOutput,
                        didOutput sampleBuffer: CMSampleBuffer,
                        from connection: AVCaptureConnection) {
@@ -280,7 +286,7 @@ extension ViewController: AVCaptureVideoDataOutputSampleBufferDelegate {
 
 }
 
-extension ViewController: AVCapturePhotoCaptureDelegate {
+extension MainViewController: AVCapturePhotoCaptureDelegate {
     func photoOutput(_ output: AVCapturePhotoOutput,
                      didFinishProcessingPhoto photo: AVCapturePhoto,
                      error: Error?) {
@@ -292,7 +298,7 @@ extension ViewController: AVCapturePhotoCaptureDelegate {
         guard let previewImage = UIImage(data: imageData) else { return }
         
         let photoPreviewContainer = PhotoPreviewViewController()
-        photoPreviewContainer.injectImage(previewImage)
+        photoPreviewContainer.inject(previewImage, vm: self.vm)
         self.navigationController?.pushViewController(photoPreviewContainer, animated: true)
     }
     
