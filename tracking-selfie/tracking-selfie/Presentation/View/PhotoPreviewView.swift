@@ -54,12 +54,9 @@ class PhotoPreviewViewController: UIViewController {
         }
         
         guard let cgImage = image.cgImage else { return }
-        let handler = VNImageRequestHandler(cgImage: cgImage, orientation: .leftMirrored, options: [:])
-        do {
-            try handler.perform([request])
-        } catch let reqErr {
-            print("Failed to perform reqeust", reqErr)
-        }
+        
+        let imageRequestHandler = VNImageRequestHandler(cgImage: cgImage, orientation: .leftMirrored, options: [:])
+        try? imageRequestHandler.perform([request])
     }
     
     private func handleDetectedFace(with faceObservation: VNFaceObservation) {
@@ -131,6 +128,6 @@ class PhotoPreviewViewController: UIViewController {
             }
         }
     }
-
+    
 }
 

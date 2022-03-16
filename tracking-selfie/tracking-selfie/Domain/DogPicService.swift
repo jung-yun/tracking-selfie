@@ -7,15 +7,20 @@
 
 import UIKit
 
-final class DogPicService {
-    private var networkController: NetworkController? = nil
+protocol DogPicServiceProtocol {
+    func getRandomDogPic(completionHandler: @escaping (Result<UIImage, NetworkError>) -> Void)
+}
+
+final class DogPicService: DogPicServiceProtocol {
+    private var networkController: NetworkControllerProtocol!
     
-    init(networkController: NetworkController) {
+    init(networkController: NetworkControllerProtocol) {
         self.networkController = networkController
     }
     
     func getRandomDogPic(completionHandler: @escaping (Result<UIImage, NetworkError>) -> Void) {
-        self.networkController?.getRandomDogPic(completionHandler: { result in
+        self.networkController.getRandomDogPic(using: .shared,
+                                               completionHandler: { result in
             switch result {
             case .success(let data):
                 guard let imageURL = JSONParser.parseDogPicResponse(data) else {
@@ -27,7 +32,6 @@ final class DogPicService {
                     }
                 }
                 
-//                completionHandler(.failure(.unableToComplete))
             case.failure(let networkError):
                 completionHandler(.failure(networkError))
             }

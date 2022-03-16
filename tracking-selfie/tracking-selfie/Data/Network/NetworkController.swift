@@ -7,22 +7,26 @@
 
 import UIKit
 
-final class NetworkController {
+protocol NetworkControllerProtocol {
+    func getRandomDogPic(using session: URLSession,
+                         completionHandler: ((Result<Data, NetworkError>) -> Void)?)
+}
+
+final class NetworkController: NetworkControllerProtocol {
     private var sessionManager: SessionManagerProtocol!
     
     init(sessionManager: SessionManagerProtocol) {
         self.sessionManager = sessionManager
     }
     
-    func getRandomDogPic(using session: URLSession = .shared,
-                         completionHandler: ((Swift.Result<Data, NetworkError>) -> Void)?) {
+    func getRandomDogPic(using session: URLSession,
+                         completionHandler: ((Result<Data, NetworkError>) -> Void)?) {
  
         let req = sessionManager.makeRandomDogPictureRequest()
         
         let task = session.dataTask(with: req) { data, response, error in
             
             if let _ = error {
-                // handling transport error
                 completionHandler?(.failure(NetworkError.unableToComplete))
                 return
             }

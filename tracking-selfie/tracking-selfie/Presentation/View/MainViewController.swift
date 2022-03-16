@@ -17,7 +17,7 @@ enum CameraAccessError: String, Error {
 }
 
 class MainViewController: UIViewController {
-    private var vm: (LocalPhotoLibraryUsable & DogPicDownloadable)! = nil
+    private var vm: (LocalPhotoLibraryUsable & DogPicDownloadable)!
     
     private let captureSession = AVCaptureSession()
     private lazy var previewLayer = AVCaptureVideoPreviewLayer(session: self.captureSession)
@@ -77,12 +77,16 @@ class MainViewController: UIViewController {
                                   completion: nil, autodismiss: nil)
             }
         }
-        
     }
     
+    ///Next we need to adapt the preview layer’s frame when the container’s view frame changes; it can potentially change at different points of the UIViewController instance lifecycle
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        self.previewLayer.frame = CGRect(x: self.view.frame.minX, y: self.view.frame.minY, width: self.view.frame.width, height: self.view.frame.height)
+        self.previewLayer.frame = CGRect(x: self.view.frame.minX,
+                                         y: self.view.frame.minY,
+                                         width: self.view.frame.width,
+                                         height: self.view.frame.height)
+        
         self.view.bringSubviewToFront(shootButton)
         self.view.bringSubviewToFront(dogPicButton)
         self.view.bringSubviewToFront(dogPicImageView)
@@ -148,7 +152,6 @@ class MainViewController: UIViewController {
         
         do {
             let cameraInput = try AVCaptureDeviceInput(device: device)
-            // adding input to the capture session
             self.captureSession.addInput(cameraInput)
         } catch {
             fatalError(error.localizedDescription)
@@ -180,11 +183,14 @@ class MainViewController: UIViewController {
     private func showCameraFeed() {
         self.previewLayer.videoGravity = .resizeAspectFill
         self.view.layer.addSublayer(self.previewLayer)
-        self.previewLayer.frame = CGRect(x: self.view.frame.minX, y: self.view.frame.minY, width: self.view.frame.width, height: self.view.frame.height)
+        self.previewLayer.frame = CGRect(x: self.view.frame.minX,
+                                         y: self.view.frame.minY,
+                                         width: self.view.frame.width,
+                                         height: self.view.frame.height)
+        
         self.view.bringSubviewToFront(shootButton)
         self.view.bringSubviewToFront(dogPicButton)
         self.view.bringSubviewToFront(dogPicImageView)
-//        self.view.setNeedsLayout()
     }
     
     private func getCameraFrames() {
@@ -217,7 +223,6 @@ class MainViewController: UIViewController {
         
         let imageRequestHandler = VNImageRequestHandler(cvPixelBuffer: image, orientation: .leftMirrored, options: [:])
         try? imageRequestHandler.perform([faceDetectionRequest])
-    
     }
     
     private func handleFaceDetectionResults(_ observedFaces: [VNFaceObservation]) {
@@ -225,6 +230,7 @@ class MainViewController: UIViewController {
         
         let facesBoundingBoxes: [CAShapeLayer] = observedFaces.flatMap({ (observedFace: VNFaceObservation) -> [CAShapeLayer] in
             
+            // bounding box related
             let faceBoundingBoxOnScreen = self.previewLayer.layerRectConverted(fromMetadataOutputRect: observedFace.boundingBox)
             let faceBoundingBoxPath = CGPath(rect: faceBoundingBoxOnScreen, transform: nil)
             let faceBoundingBoxShape = CAShapeLayer()
@@ -235,12 +241,10 @@ class MainViewController: UIViewController {
             var newDrawings = [CAShapeLayer]()
             newDrawings.append(faceBoundingBoxShape)
             
-            //drawing facial features
+            // face feature related
             if let landmarks = observedFace.landmarks {
                 newDrawings = newDrawings + self.drawFacicalFeatures(landmarks, screenBoundingBox: faceBoundingBoxOnScreen)
             }
-            
-            
             
             return newDrawings
         })
@@ -337,7 +341,6 @@ extension MainViewController: AVCaptureVideoDataOutputSampleBufferDelegate {
             
         self.detectFace(in: frame)
     }
-
 }
 
 extension MainViewController: AVCapturePhotoCaptureDelegate {
@@ -355,5 +358,4 @@ extension MainViewController: AVCapturePhotoCaptureDelegate {
         photoPreviewContainer.inject(previewImage, vm: self.vm)
         self.navigationController?.pushViewController(photoPreviewContainer, animated: true)
     }
-    
 }

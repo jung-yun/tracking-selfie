@@ -22,13 +22,16 @@ enum PhotoSaveError: String, Error {
     case cannotSavePhotoToLibrary = "Cannot Save Photo to Photo Library"
 }
 
-final class ViewModel: LocalPhotoLibraryUsable {
-    private var dogPicService: DogPicService?
+final class ViewModel {
+    private var dogPicService: DogPicServiceProtocol!
     
-    init(dogPicService: DogPicService) {
+    init(dogPicService: DogPicServiceProtocol) {
         self.dogPicService = dogPicService
     }
     
+}
+
+extension ViewModel: LocalPhotoLibraryUsable {
     func save(photos: [UIImage], completionHandler: @escaping (Result<Void, PhotoSaveError>) -> Void) {
         PHPhotoLibrary.requestAuthorization { (status) in
             if status == .authorized {
@@ -49,7 +52,6 @@ final class ViewModel: LocalPhotoLibraryUsable {
             }
         }
     }
-    
 }
 
 extension ViewModel: DogPicDownloadable {

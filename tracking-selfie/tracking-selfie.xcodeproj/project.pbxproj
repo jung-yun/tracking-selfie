@@ -127,8 +127,8 @@
 			children = (
 				88D1722E27DF14C800954B8E /* Application */,
 				88D1723027DF14E700954B8E /* Data */,
-				88D1723227DF14F700954B8E /* Presentation */,
 				88D1723127DF14EF00954B8E /* Domain */,
+				88D1723227DF14F700954B8E /* Presentation */,
 				88D1722F27DF14D400954B8E /* Supporting */,
 			);
 			path = "tracking-selfie";
@@ -175,13 +175,7 @@
 		88D1723027DF14E700954B8E /* Data */ = {
 			isa = PBXGroup;
 			children = (
-				88D1724427E20DF800954B8E /* EndPoint.swift */,
-				88D1724227E20DD400954B8E /* HTTPMethod.swift */,
-				88D1723E27E20BE800954B8E /* NetworkController.swift */,
-				88D1724027E20C2A00954B8E /* SessionManager.swift */,
-				88D1724627E2104200954B8E /* NetworkError.swift */,
-				88D1724827E2108D00954B8E /* JSONParser.swift */,
-				88D1724A27E2110300954B8E /* DogPicDataModel.swift */,
+				88D1725027E21FF800954B8E /* Network */,
 			);
 			path = Data;
 			sourceTree = "<group>";
@@ -189,6 +183,7 @@
 		88D1723127DF14EF00954B8E /* Domain */ = {
 			isa = PBXGroup;
 			children = (
+				88D1724827E2108D00954B8E /* JSONParser.swift */,
 				88D1724C27E2128E00954B8E /* DogPicService.swift */,
 			);
 			path = Domain;
@@ -228,6 +223,19 @@
 				88D1723A27E1CFF500954B8E /* ViewModel.swift */,
 			);
 			path = "View Model";
+			sourceTree = "<group>";
+		};
+		88D1725027E21FF800954B8E /* Network */ = {
+			isa = PBXGroup;
+			children = (
+				88D1724427E20DF800954B8E /* EndPoint.swift */,
+				88D1724227E20DD400954B8E /* HTTPMethod.swift */,
+				88D1723E27E20BE800954B8E /* NetworkController.swift */,
+				88D1724027E20C2A00954B8E /* SessionManager.swift */,
+				88D1724627E2104200954B8E /* NetworkError.swift */,
+				88D1724A27E2110300954B8E /* DogPicDataModel.swift */,
+			);
+			path = Network;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */

@@ -16,7 +16,7 @@ final class SessionManager: SessionManagerProtocol {
         let endpoint = Endpoint.randomDogPicture()
         var request = URLRequest(url: endpoint.url)
         
-        // the api key will possibly changed
+        // the api key will possibly be changed later
         request.setValue("5a3568e2-0d92-4fff-8477-78b65dde3691",
                          forHTTPHeaderField: "x-api-key")
         

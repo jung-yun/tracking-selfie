@@ -11,7 +11,8 @@ class MainNavigationController: UINavigationController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        let networkController = NetworkController(sessionManager: SessionManager())
+        let sessionManager = SessionManager()
+        let networkController = NetworkController(sessionManager: sessionManager)
         let dogPicService = DogPicService(networkController: networkController)
         let vm = ViewModel(dogPicService: dogPicService)
         
